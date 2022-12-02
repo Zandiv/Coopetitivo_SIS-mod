@@ -253,35 +253,11 @@ def ver(array,el):
 
     return(array)
 
-def union(arr1,arr2):
+def inter(arr1,arr2):
     
     arr = arr1*arr2
     
     return(arr)
-
-def make_gameboard(Tamanio, JA):
-
-    matriz = np.zeros((Tamanio,Tamanio))
-    estados = ["S", "I"]
-    estados2 = [f"a{i}" for i in range(Tamanio-len(estados))]
-    estados3 = estados+estados2
-    Matriz = pd.DataFrame(matriz)
-    Matriz.loc[0,1] = 1
-    for i in range(1,Tamanio-1):
-        
-
-        Matriz.loc[i, 0] = 1-JA
-    
-    for j in range(1, Tamanio-1):
-
-        Matriz.loc[j, j+1] = JA
-
-    Matriz.loc[j+1, 0] = 1
-
-    Matriz.index = estados3
-    Matriz.columns = estados3
-
-    return(Matriz)
 
 def get_rows(M_caracteristicas,cadena=0):
     
@@ -297,13 +273,6 @@ def get_rows(M_caracteristicas,cadena=0):
             M_caracteristicas[M_caracteristicas.iloc[:, 1]==cadena].index]
     
     return(rows)
-
-
-#def regladetres(dift, dif, prob):
-
- #   prox = prob*dif/dift
-
-  #  return(prox)
 
 def diferencias(Matriz, coeficientes, pesos_fila):
     
