@@ -1,8 +1,4 @@
-#import os
-#import matplotlib as mt
-#import matplotlib.image as mpimg
 import matplotlib.pyplot as plt
-#import matplotlib.colors as mcolors
 import numpy as np
 import pandas as pd
 import copy
@@ -47,8 +43,8 @@ def make_jaccard(Matriz, coeficientes):
     for rows in Matriz.index:
 
         a = coeficientes.transpose()*Matriz.loc[rows, :]
-
-        a.index = rows
+        #print(a)
+        #a.index = rows
 
         a = a.squeeze()
 
@@ -56,14 +52,17 @@ def make_jaccard(Matriz, coeficientes):
 
     return (matriz)
 
-def graph(pesos, conexiones,clase,coeficientes=[]):
-
+def graph(conexiones,clase,coeficientes=[]):
+    
     fig, ax = plt.subplots()
     
-    if len(coeficientes)==0:
-        pesot = pesos
-    else:
-        pesot = np.array(pesos)*coeficientes
+    if coeficientes == []:
+        
+        pesot = conexiones.sum()
+        
+    else: 
+        
+        pesot = conexiones.sum()*coeficientes
 
     nexos = conexiones.to_dict()
 
@@ -131,7 +130,7 @@ def graph(pesos, conexiones,clase,coeficientes=[]):
 
       #  color = plt.cm.RdYlBu(np.sin(k*int(pesot[c-1])))
 
-        size = pesot[c-1]*1.2
+        size = pesot[c-1]*(len(conexiones)/43)
 
         plt.scatter(pos[f"{i}"][0], pos[f"{i}"][1], s=size, color=color[f"{i}"], zorder=1)
 
@@ -146,6 +145,7 @@ def graph(pesos, conexiones,clase,coeficientes=[]):
         #plt.scatter( 10, -2, color = colortipo[tipo.index(i)], label = i)
     
     #plt.legend(tipo, loc="lower right")
+    
     
     
     ax.spines["top"].set_visible(False)
@@ -285,7 +285,7 @@ def make_gameboard(Tamanio, JA):
 
 def get_rows(M_caracteristicas,cadena=0):
     
-    if cadena == 0:
+    if cadena == 0 or cadena == "":
         
         rows = [i[0] for i in 
             M_caracteristicas[M_caracteristicas.iloc[:, 1]!=0].index]
@@ -407,71 +407,10 @@ def diferencias(Matriz, coeficientes, pesos_fila):
                     
 
 
-##################Diccionario de datos
-entidades = {"1":"UNIVALLE", "2":"CIAT", "3":"CENICA A", "4":"UAD", "5":"UNAL", "6":"UIS", "7":"UCESAR", "8":"ITM", "9":"UPB",
-            "10":"UPAMPLONA", "11":"ULIBRE", "12":"UDEA", "13":"SENA", "14":"BIOPACIFICO", "15":"CORPOICA_AGROSAVIA", "16":"BIOTEC",
-            "17":"ALEXANDER VON HUMBOLT", "18":"CORPOGEN", "19":"CENIPALMA", "20":"INCAUCA", "21":"RIOPAILA", "22":"MAYAGUEZ",
-            "23":"PROVIDENCIA", "24":"RISARALDA", "25":"GPC", "26":"PROGEN", "27":"BIOENERGY", "28":"ASOCA A", "29":"PROCA A",
-            "30":"CIAMSA", "31":"TECNICA A", "32":"TERPEL", "33":"FEDEPETROLEO", "34":"MINMINAS", "35":"MINCIENCIAS", "36":"DNP", "37":"MADR",
-            "38":"FEPALMA", "39":"FEDEBIOCOMBUSTIBLES", "40":"ICA", "41":"BANCO AGRARIO", "42":"FINAGRO", "43":"BANCOLDEX"} #Paso 1, se crean las entidades
-
-caracteristica = {"1":"Nro de topicos","2":"Tipo de actor", "3":"Capacidad de investigacion",
-"4":"Capacidad de desarrollo", "5":"Capacidad de difusion", "6":"Capacidad de mercadeo"}
-
-#################
-
-################# Matriz de caracteristicas y conexiones
-
-M_caracteristicas = pd.read_csv("Matriz de CTI-ok.csv", sep=";", header=None)
-M_caracteristicas.columns=[list(caracteristica.values())]
-M_caracteristicas.index=[list(entidades.values())]
-
-M_conex = pd.read_csv("matrizactores.csv", sep=",", header=None)
-M_conex.columns=[list(entidades.values())]
-M_conex.index=[list(entidades.values())]
-M_conex = corrector(M_conex)
-
-################## Coeficientes
-
-coeficientes = M_caracteristicas[M_caracteristicas.columns[-4:]]
-
-################# Pesos
-
-pesos = []
-pef = []
-j = []
-
-for i in M_conex.columns:
-
-    pf = M_conex.transpose()[i].sum()
-    pc = M_conex[i].sum()
-
-    pef.append(pf)
-
-    pesos.append(2*pf)
-
-    j.append(i)
-
-################## Interfaz
 
 
-import tkinter as tk
-from tkinter import ttk
 
-root = tk.Tk()
-root.title("Modelo SIS")
-main_windows = tk.Frame(root)
-main_windows.pack()
-main_windows.config(width=1000, height=1000)
-combo = ttk.Combobox(main_windows, state = "readonly", values=["Horizontal", "Vertical"])
-combo.set("Vertical")
-combo.pack()
-combo_value = []
-boton = tk.Button(main_windows,text="Presione para imprimir",
-                  command=lambda:[combo_value.append(combo.get())])
-boton.pack()
 
-root.mainloop()
 
 
 
