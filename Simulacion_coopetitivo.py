@@ -13,7 +13,7 @@ def corrector(matriz):
         Matriz.iloc[[v for v in range(i,len(matriz.index))], i] = a
         Matriz.loc[rows, rows] = 0
         i += 1
-
+        
     return(Matriz)
 
 def mat_power(n, matriz):
@@ -191,13 +191,13 @@ def DTMC_SIS(beta, gamma, poblacion, c_tiempo, duracion, NA=1, NB=1, JA=1, JB=1)
     #donde I sea el vector de infectados
     #S el vector de entidades susceptibles
     #El ultimo contagia, podrías cambiar el beta y gamma posiblemente
-    I = [2]
+    I = [1]
     S = [poblacion-I[0]]
     dt = int(duracion/c_tiempo)
     M_T = np.matrix(np.zeros((dt,dt)))
     M_T[0,0]=1
 
-    tc = c_tiempo/(100)
+    tc = c_tiempo/(10)
     #Añadir un ciclo for aqui para la lista de simulacion
 
     for t in range(dt):
@@ -370,10 +370,7 @@ def diferencias(Matriz, coeficientes, pesos_fila):
     for rows in Matriz.index: #Para toda fila en los indices de la matriz haga
         
         rows = rows[0]
-    
-        inf.update({rows : {}}) #Añada un diccionario con llave la fila en inf
-        sup.update({rows : {}}) #Añada un diccionario con llave la fila en sup
-
+      
         for cols in Matriz.columns: #Para toda columna en los indices de la matriz haga
 
             cols = cols[0]
@@ -403,15 +400,4 @@ def diferencias(Matriz, coeficientes, pesos_fila):
                         Matriz2.loc[rows,cols] = a*prob_F[rows]/peso_F[rows] #Guardelo en la posición i,j de la matriz
     
             
-    return([Matriz2, prob_E, prob_F])
-                    
-
-
-
-
-
-
-
-
-
-
+    return([Matriz2, prob_E, prob_F, inf, sup])
