@@ -155,7 +155,7 @@ def graph(conexiones,clase,coeficientes=[]):
     ax.xaxis.set_visible(False)
     ax.yaxis.set_visible(False)
     
-    return(pos)
+    return([pos, edge, color])
 
 
 def markov(init, matriz, t, condicion=0 ,estados=[]):
@@ -283,14 +283,37 @@ def make_gameboard(Tamanio, JA):
 
     return(Matriz)
 
-def get_rows(M_caracteristicas,cadena=0):
+def get_rows(M_caracteristicas,cadena=""):
     
-    if cadena == 0 or cadena == "":
+    if cadena == "":
         
         rows = [i[0] for i in 
             M_caracteristicas[M_caracteristicas.iloc[:, 1]!=0].index]
-        
     
+    elif type(cadena) == type([]):
+        
+        if len(cadena) == 2:
+            
+            rows = [i[0] for i in 
+            M_caracteristicas[(M_caracteristicas.iloc[:, 1]==cadena[0]) | (M_caracteristicas.iloc[:, 1]==cadena[1])].index]
+        
+        elif len(cadena) == 3:
+            
+            rows = [i[0] for i in 
+            M_caracteristicas[(M_caracteristicas.iloc[:, 1]==cadena[0]) | (M_caracteristicas.iloc[:, 1]==cadena[1]) | (M_caracteristicas.iloc[:, 1]==cadena[2])].index]
+            
+        elif len(cadena) == 4:
+            
+            rows = [i[0] for i in 
+            M_caracteristicas[(M_caracteristicas.iloc[:, 1]==cadena[0])
+                              | (M_caracteristicas.iloc[:, 1]==cadena[1]) 
+                              | (M_caracteristicas.iloc[:, 1]==cadena[2])
+                              | (M_caracteristicas.iloc[:, 1]==cadena[3])].index]
+            
+        else:
+            rows = [i[0] for i in M_caracteristicas.index]
+                                 
+    #Ver como funciona para distintos or
     else:
         
         rows = [i[0] for i in 
