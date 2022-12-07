@@ -47,7 +47,7 @@ class SIS_interfaz(tk.Tk):
         self.combo_11.set(vals[0])
         self.combo_11.pack(padx=10, pady=10)
         
-        vals2 = np.unique(list(M_caracteristicas.iloc[:, 1][M_caracteristicas.iloc[:,1]!="Proveedor "]))
+        vals2 = np.unique(list(M_caracteristicas.iloc[:, 1]))
         vals2 = list(vals2)
         self.combo_12 = ttk.Combobox(self.containter1,
                                      values=vals2,  state="readonly")#Tipo de actor
@@ -56,6 +56,34 @@ class SIS_interfaz(tk.Tk):
         
             self.combo_12.set(vals2[0])
             self.combo_12.pack(padx=10, pady=10)
+            
+        elif self.combo_02 == "Vertical":
+            
+            self.combo_121 = ttk.Combobox(self.containter1,
+                                          values = vals2, state="readonly")
+            self.combo_121.set(vals2[0])
+            self.combo_121.pack(padx=10, pady=10)
+            
+            self.combo_122 = ttk.Combobox(self.containter1,
+                                          values = vals2, state="readonly")
+            self.combo_122.set(vals2[1])
+            self.combo_122.pack(padx=10, pady=10)
+            
+            self.combo_123 = ttk.Combobox(self.containter1,
+                                          values = vals2, state="readonly")
+            self.combo_123.set(vals2[2])
+            self.combo_123.pack(padx=10, pady=10)
+            
+            self.combo_124 = ttk.Combobox(self.containter1,
+                                          values = vals2, state="readonly")
+            self.combo_124.set(vals2[3])
+            self.combo_124.pack(padx=10, pady=10)
+            
+            self.combo_125 = ttk.Combobox(self.containter1,
+                                          values = vals2, state="readonly")
+            self.combo_125.set(vals2[4])
+            self.combo_125.pack(padx=10, pady=10)
+            
         
         self.combo_13 = ttk.Combobox(self.containter1,
                                      values=["Manual", "Pseudoaleatorio"],
@@ -77,7 +105,16 @@ class SIS_interfaz(tk.Tk):
         
     def pasar(self):
         
-        self.combo_12 = self.combo_12.get() #El tipo de entidad
+        if self.combo_02=="Horizontal":
+            
+            self.combo_12 = self.combo_12.get() #El tipo de entidad
+            
+        elif self.combo_02=="Vertical":
+            
+            self.combo_12 = [self.combo_121.get(), self.combo_122.get(),
+                             self.combo_123.get(), self.combo_124.get(),
+                             self.combo_125.get()]
+            print(self.combo_12, len(self.combo_12))
         
         self.combo_11 = self.combo_11.get() # Capacidades de interez
         
@@ -135,16 +172,30 @@ class SIS_interfaz(tk.Tk):
         self.sis = self.fig_1.add_subplot(111)
         self.sis_2 = self.fig_2.add_subplot(111)
         
-        Sc.graph(M_conex.loc[self.ent,self.ent], M_caracteristicas.iloc[:,1])
-        plt.savefig("out/"+self.combo_12+".png", bbox_inches="tight", dpi=1200)
+        c_tiempo = 0.5
+        duracion = 1000 # días
+        poblacion = len(M_conex.loc[self.ent, self.ent])
+        matriz = M_conex.loc[self.ent, self.ent]
+        print(matriz)
+        cof = M_caracteristicas.loc[self.ent, self.combo_11]
+        Matriz = Sc.diferencias(Sc.make_jaccard(matriz, cof),
+                                cof, matriz.sum())
+        print(Matriz[0])
+        mat_p = Sc.make_prob(Matriz[0])
+        print(mat_p)
+        beta = Matriz[1][self.combo_21]
+        gamma = Matriz[2][self.combo_21]*beta
+        
+        Sc.graph(round(mat_p,5), M_caracteristicas.iloc[:,1])
+        plt.savefig("out/"+f"{self.combo_12}"+".png", bbox_inches="tight", dpi=1200)
         plt.close()
         
-        M_conex.loc[self.ent, self.ent].to_csv("out/"+self.combo_12+".csv",
+        M_conex.loc[self.ent, self.ent].to_csv("out/"+f"{self.combo_12}"+".csv",
                                                sep=";")
         
-        img_arr = mtp.image.imread("out/"+self.combo_12+".png")
+        img_arr = mtp.image.imread("out/"+f"{self.combo_12}"+".png")
         self.sis.imshow(img_arr)
-        self.sis.set_title(self.combo_12)
+        self.sis.set_title(f"{np.unique(self.combo_12)}")
         
         self.sis.spines["top"].set_visible(False)
         self.sis.spines["left"].set_visible(False)
@@ -164,24 +215,20 @@ class SIS_interfaz(tk.Tk):
         self.sis_2.set_xlabel("Tiempo días")
         self.sis_2.set_ylabel("Frecuencia de infección")
         
-        c_tiempo = 0.5
-        duracion = 1000 # días
-        poblacion = len(M_conex.loc[self.ent, self.ent])
-        matriz = M_conex.loc[self.ent, self.ent]
-        cof = M_caracteristicas.loc[self.ent, self.combo_11]
-        Matriz = Sc.diferencias(Sc.make_jaccard(matriz, cof),
-                                cof, matriz.sum())
         
-        beta = Matriz[1][self.combo_21]
-        gamma = Matriz[2][self.combo_21]*beta
         
-        self.sis_2.plot(Sc.DTMC_SIS(beta, gamma, poblacion, c_tiempo, duracion)[0])
-        
+        self.sis_2.plot(Sc.DTMC_SIS(beta, gamma, poblacion, c_tiempo, duracion)[3],Sc.DTMC_SIS(beta, gamma, poblacion, c_tiempo, duracion)[0])
+        self.sis_2.plot(Sc.DTMC_SIS(beta, gamma, poblacion, c_tiempo, duracion)[3],Sc.DTMC_SIS(beta, gamma, poblacion, c_tiempo, duracion)[1])
         canvas_2 = FigureCanvasTkAgg(self.fig_2, master=self)
         toolbar_2 = NavigationToolbar2Tk(canvas_2, self)
         canvas_2.draw()
         canvas_2.get_tk_widget().pack(side="right", fill="both", expand=True)
         canvas_2._tkcanvas.pack(side="right", fill="both", expand=True)
+        
+        g = Sc.Graph(len(mat_p))
+        g.graph=np.array(mat_p)
+        dijk= g.dijkstra(1)
+        print(dijk.sort_values(by="Distance from Source"))
         
         
         #np.linalg.eig(

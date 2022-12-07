@@ -88,14 +88,16 @@ def graph(conexiones,clase,coeficientes=[]):
     for i in nexos:
         
         a = colory[tipo.index(clase.loc[i,:].to_numpy()[0])]
-        color.update({f"{i}":
+        color.update({f"{i[0]}":
                       a})     
 
     c = 0
+    
+    u = np.random.uniform(0,1, len(nexos))
 
     for i in nexos:
 
-        pos.update({f"{i}" : [3*np.cos(c), 2*np.sin(c)]})
+        pos.update({f"{i[0]}" : [2*u[c], u[-c]+1]})
 
         c +=1
     
@@ -103,13 +105,13 @@ def graph(conexiones,clase,coeficientes=[]):
 
     for i in nexos:
 
-        edge.update({f"{i}" : []})
+        edge.update({f"{i[0]}" : []})
 
         for j in nexos[i]:
 
             if nexos[i][j] != 0:
 
-                edge[f"{i}"].append(f"{j}")
+                edge[f"{i[0]}"].append(f"{j[0]}")
 
     #c = 0
     #k = 10*np.pi/np.max(pesot)
@@ -119,9 +121,12 @@ def graph(conexiones,clase,coeficientes=[]):
  #       color = plt.cm.RdYlBu(np.sin(k*int(pesot[c])))
 
         for j in edge[i]:
+            
+            valor_medio=[(pos[i][0]+pos[j][0])/2, (pos[i][1]+pos[j][1])/2]
 
             plt.plot([pos[i][0], pos[j][0]], [pos[i][1], pos[j][1]], color=color[f"{i}"], linewidth=0.2, zorder=-1)
-        
+            
+            plt.text(valor_medio[0], valor_medio[1], str(conexiones.loc[i,j].to_numpy()[0][0]), fontsize=3)
        # c += 1
 
     c = 1
@@ -132,9 +137,9 @@ def graph(conexiones,clase,coeficientes=[]):
 
         size = pesot[c-1]*(len(conexiones)/43)
 
-        plt.scatter(pos[f"{i}"][0], pos[f"{i}"][1], s=size, color=color[f"{i}"], zorder=1)
+        plt.scatter(pos[f"{i[0]}"][0], pos[f"{i[0]}"][1], s=size, color=color[f"{i[0]}"], zorder=1)
 
-        plt.text(pos[f"{i}"][0], pos[f"{i}"][1], entidades[f"{c}"], fontsize=4)
+        plt.text(pos[f"{i[0]}"][0], pos[f"{i[0]}"][1], entidades[f"{c}"], fontsize=4)
 
         c += 1
     
@@ -196,8 +201,11 @@ def DTMC_SIS(beta, gamma, poblacion, c_tiempo, duracion, NA=1, NB=1, JA=1, JB=1)
     dt = int(duracion/c_tiempo)
     M_T = np.matrix(np.zeros((dt,dt)))
     M_T[0,0]=1
+    Tc = []
 
     tc = c_tiempo/(10)
+    
+    Tc.append(c_tiempo)
     #Añadir un ciclo for aqui para la lista de simulacion
 
     for t in range(dt):
@@ -236,8 +244,10 @@ def DTMC_SIS(beta, gamma, poblacion, c_tiempo, duracion, NA=1, NB=1, JA=1, JB=1)
 
             S.append(S[t])
             I.append(I[t])
+            
+        Tc.append(Tc[t]+c_tiempo)
 
-    return ([I,S,pd.DataFrame(M_T).transpose()])
+    return ([I,S,pd.DataFrame(M_T).transpose(),Tc])
 
 def int_M_C(array):
 
@@ -310,8 +320,14 @@ def get_rows(M_caracteristicas,cadena=""):
                               | (M_caracteristicas.iloc[:, 1]==cadena[2])
                               | (M_caracteristicas.iloc[:, 1]==cadena[3])].index]
             
-        else:
-            rows = [i[0] for i in M_caracteristicas.index]
+        elif len(cadena) == 5:
+            
+            rows = [i[0] for i in 
+            M_caracteristicas[(M_caracteristicas.iloc[:, 1]==cadena[0])
+                              | (M_caracteristicas.iloc[:, 1]==cadena[1]) 
+                              | (M_caracteristicas.iloc[:, 1]==cadena[2])
+                              | (M_caracteristicas.iloc[:, 1]==cadena[3])
+                              | (M_caracteristicas.iloc[:, 1]==cadena[4])].index]
                                  
     #Ver como funciona para distintos or
     else:
@@ -424,3 +440,99 @@ def diferencias(Matriz, coeficientes, pesos_fila):
     
             
     return([Matriz2, prob_E, prob_F, inf, sup])
+
+
+# Python program for Dijkstra's single
+# source shortest path algorithm. The program is
+# for adjacency matrix representation of the graph
+# Creditos a https://www.geeksforgeeks.org/python-program-for-dijkstras-shortest-path-algorithm-greedy-algo-7/
+class Graph():
+ 
+    def __init__(self, vertices):
+        self.V = vertices
+        self.graph = [[0 for column in range(vertices)]
+                      for row in range(vertices)]
+    
+    
+    
+    def printSolution(self, dist):
+        
+        columns = ["Distance from Source"]
+        self.vector = []
+        
+        for node in range(self.V):
+            
+            self.vector.append([dist[node]])
+            
+        self.Dataframe = pd.DataFrame(self.vector, columns=columns)
+ 
+    # A utility function to find the vertex with
+    # minimum distance value, from the set of vertices
+    # not yet included in shortest path tree
+    def minDistance(self, dist, sptSet):
+ 
+        # Initialize minimum distance for next node
+        min = 1e7
+ 
+        # Search not nearest vertex not in the
+        # shortest path tree
+        for v in range(self.V):
+            if dist[v] < min and sptSet[v] == False:
+                min = dist[v]
+                min_index = v
+ 
+        return min_index
+ 
+    # Function that implements Dijkstra's single source
+    # shortest path algorithm for a graph represented
+    # using adjacency matrix representation
+    def dijkstra(self, src):
+ 
+        dist = [1e7] * self.V
+        dist[src] = 0
+        sptSet = [False] * self.V
+ 
+        for cout in range(self.V):
+ 
+            # Pick the minimum distance vertex from
+            # the set of vertices not yet processed.
+            # u is always equal to src in first iteration
+            u = self.minDistance(dist, sptSet)
+ 
+            # Put the minimum distance vertex in the
+            # shortest path tree
+            sptSet[u] = True
+ 
+            # Update dist value of the adjacent vertices
+            # of the picked vertex only if the current
+            # distance is greater than new distance and
+            # the vertex in not in the shortest path tree
+            for v in range(self.V):
+                if (self.graph[u][v] > 0 and
+                   sptSet[v] == False and
+                   dist[v] > dist[u] + self.graph[u][v]):
+                    dist[v] = dist[u] + self.graph[u][v]
+ 
+        self.printSolution(dist)
+        
+        return(self.Dataframe)
+# Driver program
+#g = Graph(9)
+#g.graph = np.array([[0, 4, 0, 0, 0, 0, 0, 8, 0],
+ #          [4, 0, 8, 0, 0, 0, 0, 11, 0],
+  #         [0, 8, 0, 7, 0, 4, 0, 0, 2],
+   #        [0, 0, 7, 0, 9, 14, 0, 0, 0],
+    #       [0, 0, 0, 9, 0, 10, 0, 0, 0],
+     #      [0, 0, 4, 14, 10, 0, 2, 0, 0],
+      #     [0, 0, 0, 0, 0, 2, 0, 1, 6],
+       #    [8, 11, 0, 0, 0, 0, 1, 0, 7],
+        #   [0, 0, 2, 0, 0, 0, 6, 7, 0]
+         #  ])
+
+
+ 
+#print(g.dijkstra(0))
+
+
+ 
+# This code is contributed by Divyanshu Mehta
